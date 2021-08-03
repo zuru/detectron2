@@ -33,7 +33,7 @@ contains some explanations of this file.
 """
 
 
-@unittest.skipIf(os.environ.get("CI") or TORCH_VERSION < (1, 8), "Insufficient Pytorch version")
+@unittest.skipIf(TORCH_VERSION < (1, 8), "Insufficient Pytorch version")
 class TestScripting(unittest.TestCase):
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA not available")
     def testMaskRCNN(self):
@@ -87,7 +87,7 @@ class TestScripting(unittest.TestCase):
         # https://github.com/pytorch/pytorch/issues/46944
 
 
-@unittest.skipIf(os.environ.get("CI") or TORCH_VERSION < (1, 8), "Insufficient Pytorch version")
+@unittest.skipIf(TORCH_VERSION < (1, 8), "Insufficient Pytorch version")
 class TestTracing(unittest.TestCase):
     @unittest.skipIf(not torch.cuda.is_available(), "CUDA not available")
     def testMaskRCNN(self):

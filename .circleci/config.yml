@@ -118,6 +118,8 @@ install_detectron2: &install_detectron2
   - run:
       name: Install Detectron2
       command: |
+        # Remove d2 if it is in the cache
+        pip uninstall -y detectron2
         pip install --progress-bar off -e .[all]
         python -m detectron2.utils.collect_env
 
@@ -144,18 +146,19 @@ jobs:
       # Refresh the key when dependencies should be updated (e.g. when pytorch releases)
       - restore_cache:
           keys:
-            - cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210404
+            - cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210803
 
       - <<: *install_python
       - <<: *install_linux_dep
+      - <<: *install_detectron2
+      - <<: *run_unittests
 
       - save_cache:
           paths:
-            - ~/venv
-          key: cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210404
+            - /opt/circleci/.pyenv
+            - ~/.torch
+          key: cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210803
 
-      - <<: *install_detectron2
-      - <<: *run_unittests
 
   linux_gpu_tests:
     <<: *gpu
@@ -166,21 +169,23 @@ jobs:
     steps:
       - checkout
 
-      # Cache the directory that contains python and dependencies
+      # Cache the directory that contains python, dependencies, and model checkpoints
       - restore_cache:
           keys:
-            - cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210404
+            - cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210803
 
       - <<: *install_python
       - <<: *install_linux_dep
+      - <<: *install_detectron2
+      - <<: *run_unittests
 
+      # save cache in the end, because unittests may download data
       - save_cache:
           paths:
             - /opt/circleci/.pyenv
-          key: cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210404
+            - ~/.torch
+          key: cache-{{ arch }}-<< parameters.pytorch_version >>-{{ .Branch }}-20210803
 
-      - <<: *install_detectron2
-      - <<: *run_unittests
 
   windows_cpu_build:
     <<: *windows_cpu
